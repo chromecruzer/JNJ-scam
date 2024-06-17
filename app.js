@@ -10,19 +10,12 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Set up multer for file uploads
-const storage = multer.diskStorage({ 
-  destination: function (req, file, cb) {
-    cb(null, './public/uploads'); // save files to ./public/uploads directory
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname); // keep the original filename
-  },
-});
+// Set up multer for file uploads (in-memory buffer storage)
+const storage = multer.memoryStorage(); // Use memory storage for multer
 const upload = multer({ storage: storage });
 
 // Set up nodemailer transporter
-const transporter = nodemailer.createTransport({ 
+const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
     user: process.env.GMAIL_USER,
@@ -40,8 +33,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Set the view engine to Pug
 app.set('view engine', 'pug');
 app.set('views', './views');
-app.use(express.static('public'));
-app.use(express.json()); // To parse JSON bodies 
 
 // Route to render the form
 app.get('/', (req, res) => {
@@ -58,8 +49,11 @@ app.post('/submit', upload.fields([
   const screenshots = req.files['screenshots'] || []; // access the array of screenshot files
 
   if (!name || !gender || !email || !complaint || !proof) {
+    console.log('Required fields are missing:', req.body); // Debug statement
     return res.status(400).send('Please provide name, gender, email, complaint, and proof');
   }
+
+  console.log('Form data received:', req.body); // Debug statement
 
   const mailOptions = {
     from: process.env.GMAIL_USER,
@@ -74,67 +68,31 @@ app.post('/submit', upload.fields([
     attachments: [
       {
         filename: proof.originalname,
-        path: proof.path,
+        content: proof.buffer, // Use buffer content instead of path
       },
       ...screenshots.map((screenshot) => ({
         filename: screenshot.originalname,
-        path: screenshot.path,
+        content: screenshot.buffer, // Use buffer content instead of path
       })),
     ],
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('Message sent successfully');
-   // res.send('Message sent successfully');
-    res.redirect('/')
+    console.log('Message sent successfully'); // Debug statement
+    res.send('Message sent successfully'); // Send response to client
 
-    // Clear uploads directory
-    clearUploadsDirectory('./public/uploads');
+    // No need to clear uploads directory as files are in memory
   } catch (error) {
-    console.error('Failed to send message:', error);
-    res.status(500).send('Failed to send message');
+    console.error('Failed to send message:', error); // Log error
+    res.status(500).send('Failed to send message'); // Send error response
   }
 });
-
-// Function to clear uploads directory (remove files only)
-function clearUploadsDirectory(directoryPath) {
-  const directory = path.resolve(__dirname, directoryPath);
-
-  fs.readdir(directory, (err, files) => {
-    if (err) {
-      console.error('Error reading directory:', err);
-      return;
-    }
-
-    for (const file of files) {
-      const filePath = path.join(directory, file);
-
-      // Check if it is a file (not a directory)
-      fs.stat(filePath, (err, stats) => {
-        if (err) {
-          console.error(`Error getting file stats for ${file}:`, err);
-          return;
-        }
-        
-        if (stats.isFile()) {
-          fs.unlink(filePath, (err) => {
-            if (err) {
-              console.error(`Error deleting file ${file}:`, err);
-            } else {
-              console.log(`Deleted file: ${filePath}`); 
-            }
-          });
-        }
-      });
-    }
-    console.log('Uploads directory cleared');
-  });
-}
 
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
