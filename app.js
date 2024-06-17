@@ -80,7 +80,50 @@ app.post('/submit', upload.fields([
   try {
     await transporter.sendMail(mailOptions);
     console.log('Message sent successfully'); // Debug statement
-    res.send('Message sent successfully'); // Send response to client
+    // res.send('Message sent successfully'); // Send response to client  
+    // Send an HTML response to client
+    res.send(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>Form Submission</title> 
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f2f2f2;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              margin: 0;
+            }
+            .container {
+              background-color: #fff;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              text-align: center;
+            }
+            h1 {
+              color: #333;
+            }
+            a {
+              display: inline-block;
+              margin-top: 20px;
+              text-decoration: none;
+              color: #4CAF50;
+              font-weight: bold;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Message sent successfully</h1>
+            <a href="/">Go back to the form</a>
+          </div>
+        </body>
+      </html>
+    `);
 
     // No need to clear uploads directory as files are in memory
   } catch (error) {

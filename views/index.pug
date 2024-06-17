@@ -74,7 +74,7 @@ html(lang="en")
   body
     .container
       h1 Scam Complaint Form
-      form(action="/submit", method="post", enctype="multipart/form-data")
+      form(action="/submit", method="post", enctype="multipart/form-data", onsubmit="handleSubmit(event)")
         .form-group
           label(for="name") Name:
           input(type="text", id="name", name="name", required)
@@ -95,7 +95,18 @@ html(lang="en")
           label(for="proof") Proof (PDF):
           input(type="file", id="proof", name="proof", accept=".pdf", required)
         .form-group
-          label(for="screenshots") Screenshots (PNG/JPG) - optional only:
+          label(for="screenshots") Screenshots (PNG/JPG) - optional:
           input(type="file", id="screenshots", name="screenshots", accept=".png,.jpg,.jpeg", multiple)
         .form-group
-          button(type="submit", id="submitBtn", onclick="this.innerHTML = 'Submitting...'; this.disabled = true; this.form.submit();") Submit
+          button(type="submit", id="submitBtn") Submit
+    script.
+      function handleSubmit(event) {
+        const form = event.target;
+        if (form.checkValidity()) {
+          const submitBtn = document.getElementById('submitBtn');
+          submitBtn.innerHTML = 'Submitting...';
+          submitBtn.disabled = true;
+        } else {
+          event.preventDefault();
+        }
+      }
