@@ -1,0 +1,27 @@
+{
+  "name": "jnj",
+  "version": "1.0.0",
+  "description": "This Application is created to handover the Offer letters provided by the organisation JNJ company.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js",
+    "minify": "terser app.js -o Production/main.min.js --compress --mangle",
+    "start": "node Production/main.min.js"
+  },
+  "keywords": [
+    "#scam",
+    "#justice",
+    "#2024"
+  ],
+  "author": "Amutha. V",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.13",
+    "pug": "^3.0.3",
+    "terser": "^5.31.1"
+  }
+}
